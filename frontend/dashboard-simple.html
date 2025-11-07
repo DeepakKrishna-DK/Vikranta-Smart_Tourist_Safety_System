@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tourist Dashboard - VIKRANTA</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .dashboard-container {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #001f54;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .info-item {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .status-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-verified {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .upload-form {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px dashed #dee2e6;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #001f54;
+        }
+        
+        .form-group select,
+        .form-group input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        
+        .document-item {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .qr-display {
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            border: 2px solid #d4af37;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 1.2em;
+            color: #001f54;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="logo.png" alt="VIKRANTA" style="width: 40px; height: 40px;">
+                <span>VIKRANTA - Tourist Dashboard</span>
+            </div>
+            <div class="nav-links">
+                <a href="tourist-auth.html">← Back to Login</a>
+                <a href="portal.html">Portal</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <div id="loadingDiv" class="loading">
+            Loading your tourist information... Please wait.
+        </div>
+
+        <div id="errorDiv" style="display: none;">
+            <div class="error-message">
+                <h3>⚠️ Access Error</h3>
+                <p id="errorMessage"></p>
+                <button class="btn" onclick="window.location.href='tourist-auth.html'">← Back to Login</button>
+            </div>
+        </div>
+
+        <div id="dashboardContent" style="display: none;">
+            <!-- Personal Information Section -->
+            <div class="section">
+                <h2>👤 Personal Information</h2>
+                <div class="info-grid" id="personalInfo">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Document Upload Section -->
+            <div class="section">
+                <h2>📄 Document Upload</h2>
+                <form id="documentUploadForm" class="upload-form">
+                    <div class="form-group">
+                        <label for="documentType">Document Type:</label>
+                        <select id="documentType" required>
+                            <option value="passport">Passport</option>
+                            <option value="visa">Visa</option>
+                            <option value="medical">Medical Certificate</option>
+                            <option value="insurance">Travel Insurance</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="documentFile">Select File:</label>
+                        <input type="file" id="documentFile" required accept=".pdf,.jpg,.jpeg,.png">
+                        <small>Supported formats: PDF, JPG, PNG (Max size: 10MB)</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary">📤 Upload Document</button>
+                </form>
+                
+                <div id="documentsListing" style="margin-top: 20px;">
+                    <h3>Uploaded Documents</h3>
+                    <div id="documentsList">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- QR Code Section (Only shown when verified) -->
+            <div class="section" id="qrSection" style="display: none;">
+                <h2>🎴 Your QR Code</h2>
+                <div class="qr-display" id="qrDisplay">
+                    <!-- QR code will be generated here -->
+                </div>
+                <div style="text-align: center; margin-top: 15px;">
+                    <button class="btn btn-primary" onclick="downloadPVCCard()">💳 Download PVC Card</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <script>
+        // Global variables
+        const API_URL = '';
+        let touristData = null;
+        
+        // Get unique ID from URL or sessionStorage
+        const urlParams = new URLSearchParams(window.location.search);
+        let uniqueId = urlParams.get('uniqueId') || sessionStorage.getItem('touristUniqueId');
+
+        console.log('Dashboard loading for uniqueId:', uniqueId);
+
+        // Initialize dashboard
+        if (!uniqueId) {
+            showError('No tourist ID found. Please login first.');
+        } else {
+            loadTouristData();
+        }
+
+        // Load tourist data from API
+        async function loadTouristData() {
+            try {
+                console.log('Loading data for:', uniqueId);
+                
+                const response = await fetch(`${API_URL}/api/tourist/info/${uniqueId}`);
+                const result = await response.json();
+
+                console.log('API Response:', result);
+
+                if (result.success && result.data) {
+                    touristData = result.data;
+                    displayTouristInfo();
+                    loadDocuments();
+                    
+                    // Show QR code if verified
+                    if (result.data.isVerified) {
+                        generateQRCode();
+                    }
+                } else {
+                    showError(result.message || 'Failed to load tourist data. Please check your unique ID.');
+                }
+            } catch (error) {
+                console.error('Error loading tourist data:', error);
+                showError('Error connecting to server: ' + error.message);
+            }
+        }
+
+        // Display tourist information
+        function displayTouristInfo() {
+            document.getElementById('loadingDiv').style.display = 'none';
+            document.getElementById('dashboardContent').style.display = 'block';
+
+            const personalInfo = document.getElementById('personalInfo');
+            const statusBadge = touristData.isVerified 
+                ? '<span class="status-badge status-verified">✅ Verified</span>'
+                : '<span class="status-badge status-pending">⏳ Pending</span>';
+
+            personalInfo.innerHTML = `
+                <div class="info-item">
+                    <strong>Name:</strong><br>
+                    ${touristData.name || 'N/A'}
+                </div>
+                <div class="info-item">
+                    <strong>Nationality:</strong><br>
+                    ${touristData.nationality || 'N/A'}
+                </div>
+                <div class="info-item">
+                    <strong>Unique ID:</strong><br>
+                    ${uniqueId}
+                </div>
+                <div class="info-item">
+                    <strong>Status:</strong><br>
+                    ${statusBadge}
+                </div>
+                <div class="info-item">
+                    <strong>Registration Date:</strong><br>
+                    ${formatDate(touristData.registrationDate)}
+                </div>
+                <div class="info-item">
+                    <strong>Verification Date:</strong><br>
+                    ${touristData.verificationDate ? formatDate(touristData.verificationDate) : 'Not verified yet'}
+                </div>
+            `;
+        }
+
+        // Handle document upload
+        document.getElementById('documentUploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const documentType = document.getElementById('documentType').value;
+            const documentFile = document.getElementById('documentFile').files[0];
+            
+            if (!documentFile) {
+                alert('Please select a file to upload');
+                return;
+            }
+
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Uploading...';
+
+            try {
+                const formData = new FormData();
+                formData.append('uniqueId', uniqueId);
+                formData.append('documentType', documentType);
+                formData.append('document', documentFile);
+
+                console.log('Uploading document:', documentType);
+
+                const response = await fetch(`${API_URL}/api/tourist/upload-document`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                console.log('Upload result:', result);
+
+                if (result.success) {
+                    alert('✅ Document uploaded successfully!');
+                    document.getElementById('documentFile').value = '';
+                    loadDocuments(); // Refresh document list
+                } else {
+                    alert('❌ Upload failed: ' + (result.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                alert('❌ Upload failed: ' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '📤 Upload Document';
+            }
+        });
+
+        // Load and display documents
+        async function loadDocuments() {
+            try {
+                const response = await fetch(`${API_URL}/api/tourist/documents/${uniqueId}`);
+                const result = await response.json();
+                
+                console.log('Documents response:', result);
+                
+                const documentsList = document.getElementById('documentsList');
+                
+                if (result.success && result.documents && result.documents.length > 0) {
+                    documentsList.innerHTML = result.documents.map(doc => `
+                        <div class="document-item">
+                            <strong>📄 ${doc.documentType}</strong><br>
+                            <small>IPFS: ${doc.ipfsHash}</small><br>
+                            <span style="color: ${doc.isVerified ? 'green' : 'orange'};">
+                                ${doc.isVerified ? '✅ Verified' : '⏳ Pending Review'}
+                            </span><br>
+                            <small>Uploaded: ${formatDate(doc.uploadDate)}</small>
+                        </div>
+                    `).join('');
+                } else {
+                    documentsList.innerHTML = '<p>No documents uploaded yet. Upload your documents above.</p>';
+                }
+            } catch (error) {
+                console.error('Error loading documents:', error);
+                document.getElementById('documentsList').innerHTML = '<p>Error loading documents.</p>';
+            }
+        }
+
+        // Generate QR Code (only for verified tourists)
+        function generateQRCode() {
+            document.getElementById('qrSection').style.display = 'block';
+            
+            const qrData = {
+                touristId: uniqueId,
+                name: touristData.name,
+                nationality: touristData.nationality,
+                isVerified: touristData.isVerified,
+                verificationDate: touristData.verificationDate,
+                issuer: 'VIKRANTA Tourism Department'
+            };
+
+            QRCode.toCanvas(
+                document.createElement('canvas'),
+                JSON.stringify(qrData),
+                {
+                    width: 300,
+                    margin: 2,
+                    errorCorrectionLevel: 'H',
+                    color: {
+                        dark: '#001f54',
+                        light: '#ffffff'
+                    }
+                },
+                function (err, canvas) {
+                    if (err) {
+                        console.error('QR generation error:', err);
+                        return;
+                    }
+                    document.getElementById('qrDisplay').innerHTML = '';
+                    document.getElementById('qrDisplay').appendChild(canvas);
+                }
+            );
+        }
+
+        // Download PVC Card
+        async function downloadPVCCard() {
+            try {
+                const response = await fetch(`${API_URL}/api/tourist/pvc-card/${uniqueId}`);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to generate PVC card');
+                }
+                
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `VIKRANTA-PVC-${uniqueId}.pdf`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+                
+                alert('✅ PVC Card downloaded successfully!');
+            } catch (error) {
+                console.error('PVC download error:', error);
+                alert('❌ Failed to download PVC card: ' + error.message);
+            }
+        }
+
+        // Utility functions
+        function formatDate(timestamp) {
+            if (!timestamp || timestamp === '0') return 'N/A';
+            const date = new Date(parseInt(timestamp) * 1000);
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+        }
+
+        function showError(message) {
+            document.getElementById('loadingDiv').style.display = 'none';
+            document.getElementById('dashboardContent').style.display = 'none';
+            document.getElementById('errorDiv').style.display = 'block';
+            document.getElementById('errorMessage').textContent = message;
+        }
+    </script>
+</body>
+</html>

@@ -172,6 +172,59 @@
             font-size: 1.2rem;
             color: var(--primary-blue);
         }
+
+        .upload-form {
+            margin-top: var(--spacing-md);
+            background: var(--light-gray);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-md);
+        }
+
+        .form-group {
+            margin-bottom: var(--spacing-md);
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: var(--spacing-xs);
+            font-weight: 600;
+            color: var(--primary-navy);
+        }
+
+        .form-group select,
+        .form-group input[type="file"] {
+            width: 100%;
+            padding: var(--spacing-sm);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background: white;
+        }
+
+        .form-group small {
+            display: block;
+            margin-top: 5px;
+            color: var(--text-muted);
+        }
+
+        .documents-list {
+            margin-top: var(--spacing-lg);
+        }
+
+        .document-item {
+            background: white;
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        .document-item p {
+            margin: var(--spacing-xs) 0;
+        }
+
+        .document-item:hover {
+            box-shadow: var(--shadow-sm);
+        }
     </style>
 </head>
 <body>
@@ -230,6 +283,30 @@
                         <strong>🔄 Active Status</strong>
                         <span id="activeStatus">-</span>
                     </div>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h2>📄 Document Upload</h2>
+                <form id="documentUploadForm" class="upload-form">
+                    <div class="form-group">
+                        <label for="documentType">Document Type:</label>
+                        <select id="documentType" required>
+                            <option value="passport">Passport</option>
+                            <option value="visa">Visa</option>
+                            <option value="medical">Medical Certificate</option>
+                            <option value="insurance">Travel Insurance</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="documentFile">Select File:</label>
+                        <input type="file" id="documentFile" required accept=".pdf,.jpg,.jpeg,.png">
+                        <small>Supported formats: PDF, JPG, PNG (Max size: 10MB)</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary">📤 Upload Document</button>
+                </form>
+                <div id="documentsListing" class="documents-list">
+                    <p>Loading documents...</p>
                 </div>
             </div>
 
@@ -293,7 +370,10 @@
         const uniqueId = urlParams.get('uniqueId');
 
         if (!uniqueId) {
-            showError('No unique ID provided. Please login first.');
+            showError('⚠️ No unique ID provided.\n\nPlease login with your tourist ID first.');
+            setTimeout(() => {
+                window.location.href = 'tourist-auth.html';
+            }, 3000);
         } else {
             loadTouristData();
         }
@@ -470,10 +550,23 @@
             return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
         }
 
-        function showError(message) {
+        function showError(message, redirect = false) {
             document.getElementById('loadingDiv').style.display = 'none';
+            document.getElementById('dashboardContent').style.display = 'none';
             document.getElementById('errorDiv').style.display = 'block';
-            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('errorMessage').innerHTML = `
+                <div style="text-align: center;">
+                    <h3 style="color: #dc2626;">⚠️ Access Denied</h3>
+                    <p style="margin: 15px 0;">${message}</p>
+                    ${redirect ? '<p style="margin: 15px 0;">You will be redirected to the login page in 3 seconds...</p>' : ''}
+                </div>
+            `;
+            
+            if (redirect) {
+                setTimeout(() => {
+                    window.location.href = 'tourist-auth.html';
+                }, 3000);
+            }
         }
     </script>
 </body>

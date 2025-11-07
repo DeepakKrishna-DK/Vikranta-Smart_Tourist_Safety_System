@@ -329,6 +329,9 @@
                 const data = await response.json();
 
                 if (data.success) {
+                    // Store uniqueId in session storage for persistence
+                    sessionStorage.setItem('touristUniqueId', data.uniqueId);
+                    
                     statusDiv.innerHTML = `
                         <div style="color: green; font-weight: bold; margin-top: 20px;">
                             ✅ Registration Successful!
@@ -341,13 +344,31 @@
                                 You will need this ID to login and access your dashboard.
                             </p>
                         </div>
-                        <div style="margin-top: 20px;">
-                            <button class="btn" onclick="window.location.href='dashboard.html?uniqueId=${data.uniqueId}'">
-                                Go to Dashboard
+                        <p style="margin: 15px 0; text-align: center;">
+                            Redirecting to dashboard in <span id="countdown">5</span> seconds...
+                        </p>
+                        <div style="margin-top: 20px; text-align: center;">
+                            <button class="btn" onclick="redirectToDashboard('${data.uniqueId}')" style="margin-right: 10px;">
+                                Go to Dashboard Now
+                            </button>
+                            <button class="btn" onclick="copyAndStay('${data.uniqueId}')" style="background: #4a5568;">
+                                Copy ID and Stay Here
                             </button>
                         </div>
                     `;
+                    
                     document.getElementById('registerForm').reset();
+                    
+                    // Start countdown and redirect
+                    let seconds = 5;
+                    const countdownInterval = setInterval(() => {
+                        seconds--;
+                        document.getElementById('countdown').textContent = seconds;
+                        if (seconds <= 0) {
+                            clearInterval(countdownInterval);
+                            redirectToDashboard(data.uniqueId);
+                        }
+                    }, 1000);
                 } else {
                     statusDiv.textContent = '❌ ' + (data.message || 'Registration failed');
                     statusDiv.className = 'status-message error';
@@ -385,7 +406,7 @@
                     statusDiv.className = 'status-message success';
                     
                     setTimeout(() => {
-                        window.location.href = `dashboard.html?uniqueId=${uniqueId}`;
+                        window.location.href = `dashboard-simple.html?uniqueId=${uniqueId}`;
                     }, 1000);
                 } else {
                     statusDiv.textContent = '❌ Invalid unique ID. Please check and try again.';
@@ -405,6 +426,20 @@
             }).catch(err => {
                 console.error('Failed to copy:', err);
             });
+        }
+
+        // Redirect to dashboard
+        function redirectToDashboard(uniqueId) {
+            window.location.href = `dashboard-simple.html?uniqueId=${uniqueId}`;
+        }
+
+        // Copy ID and stay on page
+        function copyAndStay(uniqueId) {
+            copyUniqueId(uniqueId);
+            const countdownEl = document.getElementById('countdown');
+            if (countdownEl) {
+                countdownEl.parentElement.innerHTML = '<span style="color: #059669;">✓ ID copied! You can now proceed to login.</span>';
+            }
         }
     </script>
 </body>
