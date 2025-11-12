@@ -11,7 +11,7 @@ A complete blockchain-based decentralized tourist registration system with uniqu
 ![Issues](https://img.shields.io/github/issues/TwinCiphers/Vikranta-Smart_Tourist_Safety_System)
 ![Contributors](https://img.shields.io/github/contributors/TwinCiphers/Vikranta-Smart_Tourist_Safety_System)
 ![Languages](https://img.shields.io/github/languages/top/TwinCiphers/Vikranta-Smart_Tourist_Safety_System)
-
+[![Deployment Status](https://railway.app/badge/thorough-reflection-production-1bb6/deploy-status)](https://thorough-reflection-production-1bb6.up.railway.app/)
 
 ---
 ## For Tourist Safety System
