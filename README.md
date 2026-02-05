@@ -14,8 +14,8 @@ A complete blockchain-based decentralized tourist registration system with uniqu
 
 ---
 ## For Tourist Safety System
-WebAPP Link : Currently Unavailable..!
-repo : Currently Unavailable..!
+WebAPP Link : Currently Unavailable..! <br>
+Repo : Currently Unavailable..!
 
 ## Authors
 Author Name: DEEPAK P S <br>
