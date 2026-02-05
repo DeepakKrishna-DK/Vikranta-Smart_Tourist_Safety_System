@@ -14,7 +14,7 @@ A complete blockchain-based decentralized tourist registration system with uniqu
 
 ---
 ## For Tourist Safety System
-visit repo [Vikranta-MVP](https://github.com/Bhanucreator/vikranta-mvp) <br>
+visit repo [Vikranta-MVP](https://github.com/Bhanucreator/VIKRANTA-AI_Tourist_Safety_Companion) <br>
 WebAPP Link : [VIKRANTA](https://vikranta-frontend.onrender.com/login)
 
 ## Authors
