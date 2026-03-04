@@ -278,7 +278,7 @@ PINATA_API_KEY=your_pinata_api_key
 PINATA_SECRET_KEY=your_pinata_secret_key
 
 # ===== Authority Configuration =====
-AUTHORITY_PASSPHRASE=vikrantaTBS$2025
+AUTHORITY_PASSPHRASE= ex:vikrantaTBS$2025
 
 # ===== Short ID Configuration =====
 SHORT_ID_LENGTH=10
@@ -1231,9 +1231,7 @@ SOFTWARE.
 - **Discussions**: [Ask questions](https://github.com/TwinCiphers/Vikranta-Blockchain_ID_Generation/discussions)
 
 ### Contact
-- **Email**: support@example.com
-- **Discord**: [Join our server](#)
-- **Twitter**: [@YourProject](#)
+- **Email**: [support@example.com](tech.pheonix03@gmail.com)
 
 ---
 
@@ -1288,7 +1286,7 @@ Documentation: Comprehensive
 
 ---
 
-**Built with ❤️ by TwinCiphers for secure and transparent tourist registration**
+**Built with ❤️ by dk <br> for secure and transparent tourist registration**
 
 ---
 
@@ -1323,7 +1321,7 @@ Authority Panel: https://localhost/authority-login.html
 
 ### Important Credentials
 ```
-Authority Passphrase: vikrantaTBS$2025
+Authority Passphrase: ex: vikrantaTBS$2025
 Deployer Address: 0x9bBD3535c5582A4b15a529Bb3794688728988D41
 Contract Address: 0x4c83302C0db7E91d0c5a42604E98650cF5e8c59e
 Network ID: 5777
